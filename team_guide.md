@@ -16,3 +16,5 @@
     - Compare model on Adam and SGD Optimizer.
     - Remove, adjust MaxPool2D Layers
     - Experiment with Multiple Classification Layers
+8. Disuss Architecture and Module Add And Change with Team Before trying yourself
+9. Always Use the Common Modules no Additional Unknown modules
