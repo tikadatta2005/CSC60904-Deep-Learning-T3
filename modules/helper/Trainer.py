@@ -9,7 +9,7 @@ class Trainer:
         train_loader,
         val_loader,
         optimizer,
-        criterion,
+        criteration,
         device=None,
         print_every=1,
         save_dir=None,
@@ -20,7 +20,7 @@ class Trainer:
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.optimizer = optimizer
-        self.criterion = criterion
+        self.criteration = criteration
 
         # Use GPU if available
         self.device = device or (
@@ -64,7 +64,7 @@ class Trainer:
                 outputs = self.model(x)
 
                 # Calculate loss
-                loss = self.criterion(outputs, y)
+                loss = self.criteration(outputs, y)
 
                 # Backward pass and update weights
                 if training:
