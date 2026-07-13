@@ -74,3 +74,42 @@ def tester(checkpoint_dir, test_dir, batch_size=32):
             "Confusion Matrix"
         ]
     )
+   # --------------------------
+    # Loop through checkpoints
+    # --------------------------
+
+    for checkpoint in checkpoint_files:
+
+        checkpoint_path = os.path.join(
+            checkpoint_dir,
+            checkpoint
+        )
+
+        print(
+            f"Evaluating {checkpoint_path}"
+        )
+        # --------------------------
+        # Extract Epoch
+        # --------------------------
+
+        epoch = checkpoint
+
+        if "epoch_" in checkpoint:
+
+            epoch = checkpoint.split("epoch_")[-1]
+            epoch = epoch.split(".")[0]
+        # --------------------------
+        # Placeholder Results
+        # --------------------------
+
+        row = {
+            "Epoch": epoch,
+            "Loss": None,
+            "Accuracy": None,
+            "Precision": None,
+            "Recall": None,
+            "F1-Score": None,
+            "Confusion Matrix": None
+        }
+
+        results.loc[len(results)] = row
