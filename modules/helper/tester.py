@@ -98,3 +98,18 @@ def tester(checkpoint_dir, test_dir, batch_size=32):
 
             epoch = checkpoint.split("epoch_")[-1]
             epoch = epoch.split(".")[0]
+        # --------------------------
+        # Placeholder Results
+        # --------------------------
+
+        row = {
+            "Epoch": epoch,
+            "Loss": None,
+            "Accuracy": None,
+            "Precision": None,
+            "Recall": None,
+            "F1-Score": None,
+            "Confusion Matrix": None
+        }
+
+        results.loc[len(results)] = row
