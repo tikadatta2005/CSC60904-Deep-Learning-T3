@@ -42,3 +42,20 @@ def tester(checkpoint_dir, test_dir, batch_size=32):
         raise ValueError(
             "batch_size must be greater than 0"
         )
+    # --------------------------
+    # Find checkpoint files
+    # --------------------------
+
+    checkpoint_files = []
+
+    for file in os.listdir(checkpoint_dir):
+
+        if file.endswith(".pt") or file.endswith(".pth"):
+            checkpoint_files.append(file)
+
+    checkpoint_files.sort()
+
+    if len(checkpoint_files) == 0:
+        raise FileNotFoundError(
+            "No checkpoint files found."
+        )
