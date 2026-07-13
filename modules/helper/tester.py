@@ -88,3 +88,13 @@ def tester(checkpoint_dir, test_dir, batch_size=32):
         print(
             f"Evaluating {checkpoint_path}"
         )
+        # --------------------------
+        # Extract Epoch
+        # --------------------------
+
+        epoch = checkpoint
+
+        if "epoch_" in checkpoint:
+
+            epoch = checkpoint.split("epoch_")[-1]
+            epoch = epoch.split(".")[0]
