@@ -74,3 +74,17 @@ def tester(checkpoint_dir, test_dir, batch_size=32):
             "Confusion Matrix"
         ]
     )
+   # --------------------------
+    # Loop through checkpoints
+    # --------------------------
+
+    for checkpoint in checkpoint_files:
+
+        checkpoint_path = os.path.join(
+            checkpoint_dir,
+            checkpoint
+        )
+
+        print(
+            f"Evaluating {checkpoint_path}"
+        )
