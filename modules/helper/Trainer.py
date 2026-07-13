@@ -1,4 +1,5 @@
 import torch
+from calculate_metrics import calculate_metrics
 from pathlib import Path
 
 
@@ -121,6 +122,12 @@ class Trainer:
                 self.val_loader,
                 training=False
             )
+            
+            #get metrics
+            train_metrics = calculate_metrics(actual_value=train_targets, predicted_value=train_preds)
+            val_metrics = calculate_metrics(actual_value=val_targets, predicted_value=val_preds)
+            
+            
 
             # store result in history
             history.append({
@@ -128,11 +135,6 @@ class Trainer:
 
                 "train_loss": train_loss,
                 "train_preds": train_preds,
-                "train_targets": train_targets,
-
-                "val_loss": val_loss,
-                "val_preds": val_preds,
-                "val_targets": val_targets,
             })
 
             # print every progress
