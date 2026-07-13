@@ -127,15 +127,22 @@ class Trainer:
             train_metrics = calculate_metrics(actual_value=train_targets, predicted_value=train_preds)
             val_metrics = calculate_metrics(actual_value=val_targets, predicted_value=val_preds)
             
-            
-
-            # store result in history
-            history.append({
-                "epoch": epoch,
-
+            new_metrics_data = {
+                "epoch":epoch,
+                
                 "train_loss": train_loss,
-                "train_preds": train_preds,
-            })
+                "val_loss":val_loss
+            }
+            
+            for item in train_metrics:
+                key = f"train_{items.lower()}"
+                new_metrics_data[key] = train_metrics[item]
+                
+            for item in val_metrics:
+                key = f"val_{items.lower()}"
+                new_metrics_data[key] = val_metrics[item]
+                
+            history.append(new_metrics_data)
 
             # print every progress
             if epoch % self.print_every == 0:
@@ -151,9 +158,9 @@ class Trainer:
                 and self.checkpoint_every is not None
                 and epoch % self.checkpoint_every == 0
             ):
-                self._save_model(f"checkpoint_{epoch}.pth")
+                self._save_model(f"checkpoint_{epoch}.pt")
 
         # save the final model
-        self._save_model("final.pth")
+        self._save_model("final.pt")
 
         return history
