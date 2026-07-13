@@ -1,7 +1,7 @@
 import os
 import torch
 import pandas as pd
-
+from torchvision import datasets, transforms
 
 import os
 
@@ -59,3 +59,18 @@ def tester(checkpoint_dir, test_dir, batch_size=32):
         raise FileNotFoundError(
             "No checkpoint files found."
         )
+   # --------------------------
+    # Create Results DataFrame
+    # --------------------------
+
+    results = pd.DataFrame(
+        columns=[
+            "Epoch",
+            "Loss",
+            "Accuracy",
+            "Precision",
+            "Recall",
+            "F1-Score",
+            "Confusion Matrix"
+        ]
+    )
