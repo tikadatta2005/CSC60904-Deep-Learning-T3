@@ -135,11 +135,11 @@ class Trainer:
             }
             
             for item in train_metrics:
-                key = f"train_{item.lower().replace(" ", "_")}"
+                key = f"train_{item.lower().replace(' ', '_')}"
                 new_metrics_data[key] = train_metrics[item]
                 
             for item in val_metrics:
-                key = f"val_{item.lower().replace(" ", "_")}"
+                key = f"val_{item.lower().replace(' ', '_')}"
                 new_metrics_data[key] = val_metrics[item]
                 
             history.append(new_metrics_data)
