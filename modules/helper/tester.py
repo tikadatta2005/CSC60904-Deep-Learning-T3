@@ -113,3 +113,5 @@ def tester(checkpoint_dir, test_dir, batch_size=32):
         }
 
         results.loc[len(results)] = row
+        
+        return results
