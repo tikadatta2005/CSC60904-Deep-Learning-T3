@@ -7,3 +7,5 @@
 /env
 
 /datasets/*
+
+**__init__.py
