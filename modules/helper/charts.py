@@ -99,7 +99,7 @@ def gen_line_charts(data, save_path, plot_name, prefix=[]):
         # sub plotter
         sub_plots(
             row,
-            3,
+            2,
             index + 1,
             data,
             x="epoch",
