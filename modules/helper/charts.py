@@ -5,6 +5,19 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+# Global plotting style
+plt.rcParams.update({
+    "font.size": 14,
+    "axes.titlesize": 18,
+    "axes.labelsize": 16,
+    "xtick.labelsize": 13,
+    "ytick.labelsize": 13,
+    "legend.fontsize": 12,
+    "axes.titleweight": "bold",
+    "axes.labelweight": "bold"
+})
+
+
 def sub_plots(
     rows,
     columns,
@@ -20,29 +33,49 @@ def sub_plots(
     Create one subplot containing one or more line charts.
     """
 
-    # Create subplot
     plt.subplot(rows, columns, position)
 
-    # Plot each metric
     for y_name in y:
         if y_name in data.columns:
             sns.lineplot(
                 data=data,
                 x=x,
                 y=y_name,
-                label=y_name
+                label=y_name,
+                linewidth=3,
+                marker="o",
+                markersize=5
             )
         else:
             print(f"Warning: Column '{y_name}' was not found. Skipping.")
 
-    # Add labels and title
-    plt.title(title)
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
+    plt.title(
+        title,
+        fontweight="bold",
+        fontsize=18
+    )
 
-    # Add legend only when lines exist
+    plt.xlabel(
+        x_label,
+        fontweight="bold",
+        fontsize=15
+    )
+
+    plt.ylabel(
+        y_label,
+        fontweight="bold",
+        fontsize=15
+    )
+
+    plt.grid(
+        True,
+        alpha=0.3
+    )
+
     if len(plt.gca().lines) > 0:
-        plt.legend()
+        plt.legend(
+            frameon=True
+        )
 
 
 def save_plots(
@@ -58,37 +91,53 @@ def save_plots(
     Save an individual line chart.
     """
 
-    # Create figure
     plt.figure(
-        figsize=(16, 10),
+        figsize=(12, 8),
         facecolor="white"
     )
 
-    # Plot each metric
     for y_name in y:
         if y_name in data.columns:
             sns.lineplot(
                 data=data,
                 x=x,
                 y=y_name,
-                label=y_name
+                label=y_name,
+                linewidth=3,
+                marker="o",
+                markersize=6
             )
         else:
             print(f"Warning: Column '{y_name}' was not found. Skipping.")
 
-    # Add title and labels
-    plt.title(title)
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
+    plt.title(
+        title,
+        fontsize=20,
+        fontweight="bold"
+    )
 
-    # Add legend only when lines exist
+    plt.xlabel(
+        x_label,
+        fontsize=16,
+        fontweight="bold"
+    )
+
+    plt.ylabel(
+        y_label,
+        fontsize=16,
+        fontweight="bold"
+    )
+
+    plt.grid(
+        True,
+        alpha=0.3
+    )
+
     if len(plt.gca().lines) > 0:
         plt.legend()
 
-    # Generate filename
     filename = title.replace(" ", "_").lower() + ".png"
 
-    # Save figure
     plt.savefig(
         os.path.join(save_path, filename),
         dpi=300,
@@ -96,7 +145,6 @@ def save_plots(
         facecolor="white"
     )
 
-    # Close figure
     plt.close()
 
 
@@ -107,15 +155,11 @@ def gen_line_charts(
     prefix=None
 ):
 
-
-    # Prevent mutable default argument
     if prefix is None:
         prefix = []
 
-    # Create save directory if it does not exist
     os.makedirs(save_path, exist_ok=True)
 
-    # Metric names
     all_y_names = [
         "loss",
         "accuracy",
@@ -124,39 +168,41 @@ def gen_line_charts(
         "f1_score"
     ]
 
-    # Create metric groups
     paired = []
 
     for y_name in all_y_names:
 
-        # No prefix
         if len(prefix) == 0:
             paired.append([y_name])
 
-        # Add prefixes
         else:
-            pair = [
-                f"{pref}{y_name}"
-                for pref in prefix
-            ]
+            paired.append(
+                [
+                    f"{pref}{y_name}"
+                    for pref in prefix
+                ]
+            )
 
-            paired.append(pair)
 
-    # Number of columns in subplot grid
-    columns = 3
+    # Fixed 2 columns
+    columns = 2
 
-    # Calculate rows using the SAME column count
+    # Dynamic rows
     rows = math.ceil(
         len(paired) / columns
     )
 
-    # Create combined figure
+
+    # Larger figure for readability
     plt.figure(
-        figsize=(24, 10),
+        figsize=(
+            18,
+            rows * 6
+        ),
         facecolor="white"
     )
 
-    # Create all subplots
+
     for index, pair in enumerate(paired):
 
         metric_name = (
@@ -177,10 +223,12 @@ def gen_line_charts(
             y_label=metric_name
         )
 
-    # Improve spacing
-    plt.tight_layout()
 
-    # Save combined figure
+    plt.tight_layout(
+        pad=3
+    )
+
+
     plt.savefig(
         os.path.join(
             save_path,
@@ -191,13 +239,11 @@ def gen_line_charts(
         facecolor="white"
     )
 
-    # Display combined figure
-    plt.show()
 
-    # Close combined figure
+    plt.show()
     plt.close()
 
-    # Save individual metric figures
+
     for index, pair in enumerate(paired):
 
         metric_name = (
@@ -216,5 +262,5 @@ def gen_line_charts(
             save_path=save_path
         )
 
-    # Clear all figures
+
     plt.close("all")
