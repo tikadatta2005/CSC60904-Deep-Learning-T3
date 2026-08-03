@@ -9,7 +9,3 @@
 /datasets/*
 
 **__init__.py
-
-**/models
-
-**/weights
