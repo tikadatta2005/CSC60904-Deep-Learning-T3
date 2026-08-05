@@ -141,13 +141,20 @@ async def predict(
 
         output = model(image)
 
-        pred = torch.argmax(
+        probability = torch.softmax(
             output,
             dim=1
         ).item()
+        
+        confidence, prediction = torch.max(probability)
+        
+        if confidence <0.85: return {
+            "prediction":None,
+            "class_id":None
+        }
 
 
-    result = classes[pred]
+    result = classes[prediction]
 
 
     print("Prediction:", result)
