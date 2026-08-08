@@ -1,12 +1,14 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+
 from modules.architectures.Architecture import Architecture
+
 from PIL import Image
+from torchvision import transforms
+
 import torch
 import torch.nn as nn
-from torchvision import transforms
 import io
-
 
 app = FastAPI()
 
@@ -26,67 +28,136 @@ device = torch.device(
     "cuda" if torch.cuda.is_available() else "cpu"
 )
 
+print(f"Using device: {device}")
 
-# create model Architecture
 model = Architecture()
 
+
 def add_conv_layers(model, layers=1, skip_pool=0):
-    # define in and out channels
+
+    # Initial channels
     in_channels = 3
     out_channels = 8
-    # size
+
+    # Input image size
     size = 112
-    # skip pool increase by one for calculation
-    skip_pool = skip_pool+1
-    # save a trainable parameters
+
+    # Used for pooling calculation
+    skip_pool = skip_pool + 1
+
+    # Parameter counter
     total_conv_params = 0
-    # loop each layers to add on model
+
     for layer in range(layers):
-        # Convolutional Layer
+
         model.add(
-            nn.Conv2d(in_channels, out_channels, 3, 1, 1),
+            nn.Conv2d(
+                in_channels,
+                out_channels,
+                kernel_size=3,
+                stride=1,
+                padding=1
+            ),
             nn.BatchNorm2d(out_channels),
             nn.ReLU()
         )
-        # calculate trainable params
-        total_conv_params += (((3*3*in_channels) + 1) * out_channels) + (2*out_channels)
-        # Pooling Layer
-        if  (layer + 1) % skip_pool==0:
-            model.add(nn.MaxPool2d(2,2))
-            size = size//2
-        # update in and out channels
-        if (layer<layers-1):
+
+        total_conv_params += (
+            ((3 * 3 * in_channels) + 1) * out_channels
+            + (2 * out_channels)
+        )
+
+        if (layer + 1) % skip_pool == 0:
+
+            model.add(
+                nn.MaxPool2d(
+                    kernel_size=2,
+                    stride=2
+                )
+            )
+
+            size = size // 2
+
+        if layer < layers - 1:
+
             in_channels = out_channels
-            out_channels = out_channels*2
-    # return total convolutional layer parameters
-    return total_conv_params, out_channels, size
+            out_channels = out_channels * 2
 
-params, channels, size = add_conv_layers(model, 6, 1)
+    return (
+        total_conv_params,
+        out_channels,
+        size
+    )
 
-print(f"Total Convolutional Parameters: {params}")
-print(f"Final Convolutional Out Channels: {channels}")
-print(f"Final Convolutional Size: {size}")
+params, channels, size = add_conv_layers(
+    model,
+    layers=6,
+    skip_pool=1
+)
+
+print(
+    f"Total Convolutional Parameters: {params}"
+)
+
+print(
+    f"Final Convolutional Out Channels: {channels}"
+)
+
+print(
+    f"Final Convolutional Size: {size} x {size}"
+)
+
+
 
 flatten_size = channels * size * size
 
-l1_param = flatten_size * channels + channels
+l1_param = (
+    flatten_size * channels
+    + channels
+)
 
-l2_param = channels * 36 + 36
+l2_param = (
+    channels * 36
+    + 36
+)
 
-total_params = params + l1_param + l2_param
+total_params = (
+    params
+    + l1_param
+    + l2_param
+)
+
 
 model.add(
     nn.Flatten(),
-    nn.Linear(flatten_size, channels),
+
+    nn.Linear(
+        flatten_size,
+        channels
+    ),
+
     nn.ReLU(),
-    nn.Linear(channels, 36)
+
+    nn.Linear(
+        channels,
+        36
+    )
 )
 
-print(f"TOTAL TRAINABLE PARAMETERS = {total_params}")
+
+print(
+    f"TOTAL TRAINABLE PARAMETERS = {total_params}"
+)
+
+
+checkpoint_path = (
+    "./documentations/experiments/"
+    "tika-6cnn-aug/models/epoch_29.pt"
+)
 
 
 checkpoint = torch.load(
-    "./documentations/experiments/tika-6cnn-aug/models/epoch_29.pt",
+    checkpoint_path,
     map_location=device
 )
 
@@ -97,16 +168,20 @@ model.load_state_dict(
 )
 
 
+# Move model to GPU/CPU
 model = model.to(device)
 
+# Evaluation mode
 model.eval()
 
 
+print("Model loaded successfully.")
+
+
 transform = transforms.Compose([
-    transforms.Resize((112,112)),
+    transforms.Resize((112, 112)),
     transforms.ToTensor()
 ])
-
 
 
 classes = [
@@ -131,36 +206,75 @@ async def predict(
         io.BytesIO(image_bytes)
     ).convert("RGB")
 
+    # Save original dimensions for debugging
+    original_width, original_height = image.size
 
-    image = transform(image)
+    image_tensor = transform(image)
+    print(
+        f"Original image: "
+        f"{original_width} x {original_height}"
+    )
 
-    image = image.unsqueeze(0).to(device)
+    print(
+        f"Tensor before unsqueeze: "
+        f"{image_tensor.shape}"
+    )
+
+    image_tensor = image_tensor.unsqueeze(0)
+
+    print(
+        f"Tensor after unsqueeze: "
+        f"{image_tensor.shape}"
+    )
+
+    # Move tensor to same device as model
+    image_tensor = image_tensor.to(device)
 
 
     with torch.no_grad():
 
-        output = model(image)
+        output = model(image_tensor)
 
+        # Convert logits to probabilities
         probability = torch.softmax(
             output,
             dim=1
-        ).item()
-        
-        confidence, prediction = torch.max(probability)
-        
-        if confidence <0.85: return {
-            "prediction":None,
-            "class_id":None
-        }
+        )
 
+        # Get highest probability
+        confidence, prediction = torch.max(
+            probability,
+            dim=1
+        )
+
+
+    confidence = confidence.item()
+    prediction = prediction.item()
 
     result = classes[prediction]
 
+    print(
+        f"Prediction: {result}"
+    )
 
-    print("Prediction:", result)
+    print(
+        f"Class ID: {prediction}"
+    )
 
+    print(
+        f"Confidence: {confidence:.6f}"
+    )
+
+    if confidence < 0.80:
+
+        return {
+            "prediction": None,
+            "class_id": None,
+            "confidence": confidence
+        }
 
     return {
         "prediction": result,
-        "class_id": pred
+        "class_id": prediction,
+        "confidence": confidence
     }
