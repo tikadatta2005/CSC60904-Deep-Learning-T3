@@ -294,7 +294,7 @@ async def predict(
         f"Confidence: {confidence:.6f}"
     )
 
-    if confidence < 0.80:
+    if confidence < 0.50:
 
         return {
             "prediction": None,
